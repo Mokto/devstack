@@ -1,26 +1,15 @@
 import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import { ChakraProvider } from "@chakra-ui/react"
+import { memo } from 'react';
+import { IndexPage } from './pages/index';
+import theme from './theme';
+import { websocket } from './services/websocket';
 
-function App() {
+export default memo(() => {
+  console.log(websocket)
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <ChakraProvider theme={theme}>
+      <IndexPage />
+    </ChakraProvider>
   );
-}
-
-export default App;
+});

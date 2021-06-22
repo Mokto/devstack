@@ -1,0 +1,10 @@
+{
+    "watch": [
+      "."
+    ],
+    "exec": "go build main.go && ./main || exit 1",
+    "ext": "go",
+    "signal": "SIGTERM",
+    "delay": 50
+  }
+  
