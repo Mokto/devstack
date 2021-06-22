@@ -1,1 +1,22 @@
-/* @import-normalize; */
+/* https://chakra-ui.com/docs/theming/theme */
+.ansi-blue-fg {
+    color: #63B3ED;
+}
+.ansi-yellow-fg {
+    color: #F6E05E;
+}
+.ansi-red-fg {
+    color: #FC8181;
+}
+.ansi-green-fg {
+    color: #68D391;
+}
+.ansi-cyan-fg {
+    color: #76E4F7;
+}
+.ansi-magenta-fg {
+    color: #B794F4;
+}
+.ansi-black-fg {
+    color: black;
+}

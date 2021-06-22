@@ -1,101 +1,41 @@
 package runner
 
 import (
-	"bufio"
 	"devstack/config"
 	"devstack/websockets"
-	"encoding/json"
-	"fmt"
-	"io"
-	"log"
-	"os"
-	"os/exec"
-	"os/signal"
-	"strings"
-	"syscall"
-
-	"github.com/creack/pty"
-	"github.com/logrusorgru/aurora"
-	"golang.org/x/term"
 )
 
-type Data struct {
-	Message string         `json:"message"`
-	Service config.Service `json:"service"`
+type Runner struct {
+	Logs        []Data
+	config      *config.ConfigurationFile
+	connections *websockets.Connections
+	services    map[string]*ServiceRunner
 }
 
-type Message struct {
-	EventName string `json:"eventName"`
-	Data      Data   `json:"data"`
-}
-
-func Start(configFile *config.ConfigurationFile, connections *websockets.Connections) {
-
-	for _, service := range configFile.Services {
-		go func(service config.Service) {
-			fmt.Println(aurora.Blue("Running " + service.Command))
-			splitted := strings.Split(service.Command, " ")
-			cmd := exec.Command(splitted[0], splitted[1:]...)
-			if service.Cwd != "" {
-				cmd.Dir = service.Cwd
-			}
-
-			ptmx, err := pty.Start(cmd)
-			if err != nil {
-				panic(err)
-			}
-			// Make sure to close the pty at the end.
-			defer func() { _ = ptmx.Close() }() // Best effort.
-			// Handle pty size.
-			ch := make(chan os.Signal, 1)
-			signal.Notify(ch, syscall.SIGWINCH)
-			go func() {
-				for range ch {
-					if err := pty.InheritSize(os.Stdin, ptmx); err != nil {
-						log.Printf("error resizing pty: %s", err)
-					}
-				}
-			}()
-			ch <- syscall.SIGWINCH                        // Initial resize.
-			defer func() { signal.Stop(ch); close(ch) }() // Cleanup signals when done.
-			// Set stdin in raw mode.
-			oldState, err := term.MakeRaw(int(os.Stdin.Fd()))
-			if err != nil {
-				panic(err)
-			}
-			defer func() { _ = term.Restore(int(os.Stdin.Fd()), oldState) }() // Best effort.
-			// Copy stdin to the pty and the pty to stdout.
-			// NOTE: The goroutine will keep reading until the next keystroke before returning.
-			go func() { _, _ = io.Copy(ptmx, os.Stdin) }()
-
-			reader := bufio.NewReader(ptmx)
-
-			for {
-				line, _, err := reader.ReadLine()
-				if err != nil {
-					if err == io.EOF {
-						break
-					}
-					fmt.Println(err)
-					break
-				}
-				message := Message{
-					EventName: "log",
-					Data: Data{
-						Message: string(line),
-						Service: service,
-					},
-				}
-				bytes, _ := json.Marshal(message)
-				for _, user := range connections.Users {
-
-					err = websockets.Send(user, string(bytes))
-					if err != nil {
-						fmt.Println(aurora.Red(err))
-					}
-				}
-
-			}
-		}(service)
+func (r *Runner) InitAll() {
+	for _, service := range r.config.Services {
+		r.services[service.Name] = &ServiceRunner{
+			service: service,
+			runner:  r,
+		}
+		r.services[service.Name].Init()
 	}
+}
+
+func (r *Runner) Restart(serviceName string) {
+	r.services[serviceName].Restart()
+}
+
+func Start(configFile *config.ConfigurationFile, connections *websockets.Connections) *Runner {
+
+	logsHolder := &Runner{
+		Logs:        []Data{},
+		config:      configFile,
+		connections: connections,
+		services:    map[string]*ServiceRunner{},
+	}
+
+	logsHolder.InitAll()
+
+	return logsHolder
 }

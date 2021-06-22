@@ -3,23 +3,16 @@ package main
 import (
 	"fmt"
 	"net/http"
-	"strconv"
-	"time"
 
 	"github.com/labstack/echo/v4"
 	"github.com/logrusorgru/aurora"
 )
 
 func main() {
-	// // API Router
-	// restAPI := newRestAPI()
-	// restAPI.RunServer()
-	index := 0
-	for {
-		time.Sleep(time.Second)
-		fmt.Println(aurora.Green(strconv.Itoa(index)))
-		index++
-	}
+
+	// API Router
+	restAPI := newRestAPI()
+	restAPI.RunServer()
 }
 
 // RestServer is the implementation of the rest API
@@ -33,6 +26,7 @@ func newRestAPI() *RestServer {
 	e := echo.New()
 
 	e.GET("/", func(c echo.Context) error {
+		fmt.Println(aurora.Red("Test"))
 		return c.String(http.StatusOK, "Test")
 	})
 
@@ -49,4 +43,5 @@ func (server *RestServer) RunServer() {
 		// server.common.Exceptions.CaptureFatalException(err)
 		fmt.Println(aurora.Red(err))
 	}
+	// }
 }

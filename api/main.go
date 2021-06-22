@@ -8,6 +8,7 @@ import (
 	"net/http"
 
 	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
 	"github.com/logrusorgru/aurora"
 	"golang.org/x/net/websocket"
 )
@@ -19,10 +20,10 @@ func main() {
 		panic(err)
 	}
 
-	runner.Start(configFile, connections)
+	servicesRunner := runner.Start(configFile, connections)
 
 	// API Router
-	restAPI := newRestAPI(connections)
+	restAPI := newRestAPI(connections, configFile, servicesRunner)
 	restAPI.RunServer()
 }
 
@@ -32,15 +33,27 @@ type RestServer struct {
 }
 
 // NewRestAPI initialize an empty
-func newRestAPI(connections *websockets.Connections) *RestServer {
+func newRestAPI(connections *websockets.Connections, configFile *config.ConfigurationFile, servicesRunner *runner.Runner) *RestServer {
 
 	e := echo.New()
 
+	e.Use(middleware.CORS())
 	// e.Use(common.Exceptions.PanicMiddlewareWebsocket)
 
 	e.GET("/ws", websocketHandler(connections))
 	e.GET("/healthcheck", func(c echo.Context) error {
 		return c.String(http.StatusOK, "")
+	})
+	e.GET("/config", func(c echo.Context) error {
+		return c.JSON(http.StatusOK, configFile)
+	})
+	e.GET("/logs", func(c echo.Context) error {
+		return c.JSON(http.StatusOK, servicesRunner.Logs)
+	})
+	e.POST("/restart/:name", func(c echo.Context) error {
+		serviceName := c.Param("name")
+		servicesRunner.Restart(serviceName)
+		return c.NoContent(http.StatusOK)
 	})
 
 	return &RestServer{
@@ -87,20 +100,6 @@ func websocketHandler(connections *websockets.Connections) func(c echo.Context) 
 					panic(err)
 				}
 
-				// var event connectionEvent
-				// err = json.Unmarshal([]byte(msg), &event)
-				// if err != nil {
-				// 	common.Exceptions.CaptureException(err)
-				// 	return
-				// }
-
-				// if event.Event == "connected" {
-				// 	userID =
-				// }
-
-				// if event.Event == "disconnected" {
-				// 	connections.LoggedOut(ws, userID)
-				// }
 			}
 		}).ServeHTTP(c.Response(), c.Request())
 		return nil

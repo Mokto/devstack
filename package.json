@@ -25,7 +25,7 @@
     "web-vitals": "^1.1.2"
   },
   "scripts": {
-    "start": "concurrently -n frontend,backend -c blue,black 'PORT=4200 react-scripts start' 'cd api && npx nodemon'",
+    "start": "concurrently -n frontend,backend -c blue,black 'PORT=4200 react-scripts start' 'cd api && air'",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
