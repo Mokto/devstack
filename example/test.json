@@ -1,0 +1,16 @@
+{
+    "services": [{
+        "cwd": "../example/api",
+        "command": "go run ./main.go",
+        "name": "success",
+        "color": "yellow"
+    }, {
+        "command": "pwd",
+        "name": "pwd",
+        "color": "cyan"
+    }, {
+        "command": "cd pluf && go run main",
+        "name": "failure",
+        "color": "blue"
+    }]
+}

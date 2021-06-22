@@ -1,6 +1,8 @@
 package main
 
 import (
+	"devstack/config"
+	"devstack/runner"
 	"devstack/websockets"
 	"fmt"
 	"net/http"
@@ -12,6 +14,12 @@ import (
 
 func main() {
 	connections := websockets.New()
+	configFile, err := config.ReadConfigurationFile()
+	if err != nil {
+		panic(err)
+	}
+
+	runner.Start(configFile, connections)
 
 	// API Router
 	restAPI := newRestAPI(connections)
@@ -66,6 +74,7 @@ func websocketHandler(connections *websockets.Connections) func(c echo.Context) 
 			defer ws.Close()
 			for {
 				var err error
+				connections.Connect(ws)
 
 				// Read
 				msg := ""
@@ -77,8 +86,6 @@ func websocketHandler(connections *websockets.Connections) func(c echo.Context) 
 					}
 					panic(err)
 				}
-
-				connections.Connect(ws)
 
 				// var event connectionEvent
 				// err = json.Unmarshal([]byte(msg), &event)

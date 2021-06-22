@@ -1,6 +1,7 @@
 {
     "watch": [
-      "."
+      ".",
+      "../example"
     ],
     "exec": "go build main.go && ./main || exit 1",
     "ext": "go",
