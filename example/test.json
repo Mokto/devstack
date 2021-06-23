@@ -3,7 +3,8 @@
         "cwd": "../example/api",
         "command": "go run ./main.go",
         "name": "success",
-        "color": "yellow"
+        "color": "yellow",
+        "watchDirectories": ["api"]
     }, {
         "command": "pwd",
         "name": "pwd",

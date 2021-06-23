@@ -10,10 +10,11 @@ import (
 )
 
 type Service struct {
-	Command string `json:"command"`
-	Name    string `json:"name"`
-	Color   string `json:"color"`
-	Cwd     string `json:"cwd"`
+	Command          string   `json:"command"`
+	Name             string   `json:"name"`
+	Color            string   `json:"color"`
+	Cwd              string   `json:"cwd"`
+	WatchDirectories []string `json:"watchDirectories"`
 }
 
 func (s *Service) Log(anything string) {
