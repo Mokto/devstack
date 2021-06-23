@@ -1,6 +1,7 @@
 package runner
 
 import (
+	"fmt"
 	"io/fs"
 	"os"
 	"path/filepath"
@@ -55,17 +56,25 @@ func (serviceRunner *ServiceRunner) watch() {
 
 				// watch for errors
 			case err := <-serviceRunner.watcher.Errors:
+				if err == nil {
+					return
+				}
 				panic(err)
 			}
 		}
 	}()
 
 	<-serviceRunner.stopWatchingChannel
+
+	fmt.Println(aurora.Red("STOPPED WATCHING"))
+
 	serviceRunner.IsWatching = false
 	throttle.Stop()
 
 }
 
 func (serviceRunner *ServiceRunner) stopWatching() {
+	fmt.Println(aurora.Red("COUCOU"))
+
 	serviceRunner.stopWatchingChannel <- true
 }

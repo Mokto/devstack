@@ -2,6 +2,7 @@ package main
 
 import (
 	"devstack/config"
+	"devstack/errors"
 	"devstack/runner"
 	"devstack/websockets"
 	"fmt"
@@ -32,19 +33,27 @@ type RestServer struct {
 	echoServer *echo.Echo
 }
 
+type SetWatchingBody struct {
+	IsWatching bool `json:"isWatching"`
+}
+
 // NewRestAPI initialize an empty
 func newRestAPI(connections *websockets.Connections, configFile *config.ConfigurationFile, servicesRunner *runner.Runner) *RestServer {
 
 	e := echo.New()
 
 	e.Use(middleware.CORS())
-	// e.Use(common.Exceptions.PanicMiddlewareWebsocket)
+	e.HTTPErrorHandler = errors.HTTPErrorHandler
+	e.Use(errors.PanicMiddleware)
 
 	e.GET("/ws", websocketHandler(connections))
 	e.GET("/healthcheck", func(c echo.Context) error {
 		return c.String(http.StatusOK, "")
 	})
-	e.GET("/config", func(c echo.Context) error {
+	e.GET("/state", func(c echo.Context) error {
+		for _, service := range configFile.Services {
+			service.IsWatching = servicesRunner.IsWatching(service.Name)
+		}
 		return c.JSON(http.StatusOK, configFile)
 	})
 	e.GET("/logs", func(c echo.Context) error {
@@ -53,6 +62,15 @@ func newRestAPI(connections *websockets.Connections, configFile *config.Configur
 	e.POST("/restart/:name", func(c echo.Context) error {
 		serviceName := c.Param("name")
 		servicesRunner.Restart(serviceName)
+		return c.NoContent(http.StatusOK)
+	})
+	e.POST("/setWatching/:name", func(c echo.Context) error {
+		serviceName := c.Param("name")
+		var body SetWatchingBody
+		if err := c.Bind(&body); err != nil {
+			return errors.Wrap(err)
+		}
+		servicesRunner.SetWatching(serviceName, body.IsWatching)
 		return c.NoContent(http.StatusOK)
 	})
 

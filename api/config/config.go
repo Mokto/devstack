@@ -15,6 +15,7 @@ type Service struct {
 	Color            string   `json:"color"`
 	Cwd              string   `json:"cwd"`
 	WatchDirectories []string `json:"watchDirectories"`
+	IsWatching       bool     `json:"isWatching"`
 }
 
 func (s *Service) Log(anything string) {
@@ -35,7 +36,7 @@ func (s *Service) Log(anything string) {
 }
 
 type ConfigurationFile struct {
-	Services []Service `json:"services"`
+	Services []*Service `json:"services"`
 }
 
 func ReadConfigurationFile() (configFile *ConfigurationFile, err error) {

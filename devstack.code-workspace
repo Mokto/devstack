@@ -1,0 +1,30 @@
+{
+	"folders": [
+		{
+		  "path": "./api"
+		},
+		{
+		  "path": "."
+		}
+	],
+	"settings": {
+		"typescript.tsdk": "node_modules/typescript/lib",
+		"go.useLanguageServer": true,
+		"go.languageServerExperimentalFeatures": {
+			"diagnostics": true
+		},
+		"gopls": {
+			"directoryFilters": ["-src"],
+			"analyses": {		
+				"fieldalignment": true
+			},
+		},
+		"terminal.integrated.cwd": "${workspaceFolder}",
+	},
+	"extensions": {
+		"recommendations": [
+			"dbaeumer.vscode-eslint",
+			"golang.go"
+		]
+	}
+  }

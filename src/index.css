@@ -48,6 +48,10 @@ body {
     margin-bottom: 10px;
 }
 
+.service-box.service-is-watching {
+    border-color: #50FA7B;
+}
+
 .service-box .title {
     text-align: center;
     text-transform: capitalize;

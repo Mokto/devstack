@@ -6,10 +6,10 @@ import (
 )
 
 type Runner struct {
-	Logs        []Data
 	config      *config.ConfigurationFile
 	connections *websockets.Connections
 	services    map[string]*ServiceRunner
+	Logs        []Data
 }
 
 func (r *Runner) InitAll() {
@@ -24,6 +24,18 @@ func (r *Runner) InitAll() {
 
 func (r *Runner) Restart(serviceName string) {
 	r.services[serviceName].Restart()
+}
+
+func (r *Runner) IsWatching(serviceName string) bool {
+	return r.services[serviceName].IsWatching
+}
+
+func (r *Runner) SetWatching(serviceName string, isWatching bool) {
+	if isWatching {
+		r.services[serviceName].watch()
+	} else {
+		r.services[serviceName].stopWatching()
+	}
 }
 
 func Start(configFile *config.ConfigurationFile, connections *websockets.Connections) *Runner {

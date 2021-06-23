@@ -16,8 +16,10 @@ interface Service {
   name: string;
   color: string;
   command: string;
+  isWatching: boolean;
+  watchDirectories: string[];
 }
-interface Config {
+interface State {
   services: Service[];
 }
 
@@ -27,7 +29,7 @@ interface LogData {
 }
 
 export const IndexPage = memo(() => {
-  const [config, setConfig] = useState<Config>();
+  const [state, setState] = useState<State>();
   const [logs, dispatchNewLog] = useReducer(
     (state: LogData[], action: LogData) => {
       return [...state, action];
@@ -37,9 +39,10 @@ export const IndexPage = memo(() => {
 
   useEffect(() => {
     const getData = async () => {
-      const data = await fetch('http://localhost:9111/config');
+      const data = await fetch('http://localhost:9111/state');
       const result = await data.json();
-      setConfig(result);
+      setState(result);
+      console.log(result);
     };
 
     getData();
@@ -51,7 +54,7 @@ export const IndexPage = memo(() => {
       const data = await fetch('http://localhost:9111/logs');
       const result: LogData[] = await data.json();
 
-      console.log(result.forEach(log => dispatchNewLog(log)));
+      result.forEach(log => dispatchNewLog(log));
     };
 
     getData();
@@ -91,11 +94,16 @@ export const IndexPage = memo(() => {
 
   return (
     <div>
-      {config?.services && (
+      {state?.services && (
         <div className="services-container">
-          {config?.services.map(service => {
+          {state?.services.map(service => {
             return (
-              <div key={service.name} className="service-box">
+              <div
+                key={service.name}
+                className={`service-box ${
+                  service.isWatching ? 'service-is-watching' : ''
+                }`}
+              >
                 <div className="title">{service.name}</div>
                 <button
                   onClick={() => {
@@ -106,6 +114,28 @@ export const IndexPage = memo(() => {
                 >
                   Restart
                 </button>
+                {service.watchDirectories && (
+                  <button
+                    onClick={() => {
+                      service.isWatching = !service.isWatching;
+                      setState({ ...state });
+                      fetch(
+                        `http://localhost:9111/setWatching/${service.name}`,
+                        {
+                          method: 'post',
+                          body: JSON.stringify({
+                            isWatching: service.isWatching,
+                          }),
+                          headers: new Headers({
+                            'Content-Type': 'application/json',
+                          }),
+                        }
+                      );
+                    }}
+                  >
+                    {service.isWatching ? 'Stop' : 'Start'} watching
+                  </button>
+                )}
               </div>
             );
           })}

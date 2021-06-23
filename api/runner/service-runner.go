@@ -12,8 +12,8 @@ import (
 )
 
 type Data struct {
-	Message string         `json:"message"`
-	Service config.Service `json:"service"`
+	Message string          `json:"message"`
+	Service *config.Service `json:"service"`
 }
 
 type Message struct {
@@ -22,12 +22,12 @@ type Message struct {
 }
 
 type ServiceRunner struct {
-	service             config.Service
 	runner              *Runner
 	cmd                 *exec.Cmd
 	watcher             *fsnotify.Watcher
-	IsWatching          bool `json:"isWatching"`
 	stopWatchingChannel chan bool
+	service             *config.Service
+	IsWatching          bool `json:"isWatching"`
 }
 
 func (serviceRunner *ServiceRunner) Init() {
