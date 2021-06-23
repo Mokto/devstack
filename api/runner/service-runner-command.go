@@ -27,7 +27,6 @@ func getEnvValue(key string, value string) string {
 }
 
 func (serviceRunner *ServiceRunner) execCommand() {
-	fmt.Println(aurora.Blue("Running " + serviceRunner.service.Command))
 	splitted := strings.Split(serviceRunner.service.Command, " ")
 	serviceRunner.cmd = exec.Command(splitted[0], splitted[1:]...)
 	// serviceRunner.cmd = exec.Command("/bin/bash", "-c", serviceRunner.service.Command)

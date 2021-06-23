@@ -111,6 +111,8 @@ func newRestAPI(connections *websockets.Connections, configFile *config.Configur
 // RunServer starts the rest server on a specific port
 func (server *RestServer) RunServer() {
 	// go func() {
+	server.echoServer.HideBanner = true
+	server.echoServer.HidePort = true
 	err := server.echoServer.Start(":9111")
 	if err != nil && err.Error() != "http: Server closed" {
 		// server.common.Exceptions.CaptureFatalException(err)
