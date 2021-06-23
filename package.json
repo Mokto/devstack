@@ -32,7 +32,9 @@
   "scripts": {
     "lint": "eslint . --ext .ts --ext .tsx",
     "start": "concurrently -n frontend,backend -c blue,black 'PORT=4200 react-scripts start' 'cd api && air'",
-    "build": "react-scripts build && rm -rf api/build && mv build api && touch api/build/gitkeep && cd api && go build -o main && cd .. && mkdir -p bin && mv api/main bin/devstack",
+    "build": "npm run build:frontend && npm run build:backend",
+    "build:backend": "cd api && go build -o main -ldflags \"-X main.Prod=true\" && cd .. && mkdir -p bin && mv api/main bin/devstack",
+    "build:frontend": "react-scripts build && rm -rf api/build && mv build api && touch api/build/gitkeep",
     "make-global": "sudo cp bin/devstack /usr/local/bin",
     "test": "react-scripts test",
     "eject": "react-scripts eject"

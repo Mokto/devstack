@@ -4,17 +4,21 @@ import (
 	"devstack/config"
 	"devstack/errors"
 	"devstack/runner"
+	"devstack/utility"
 	"devstack/websockets"
 	"embed"
 	"fmt"
 	"io/fs"
 	"net/http"
+	"time"
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/logrusorgru/aurora"
 	"golang.org/x/net/websocket"
 )
+
+var Prod string
 
 //go:embed build
 var content embed.FS
@@ -26,6 +30,8 @@ func clientHandler() http.Handler {
 }
 
 func main() {
+	isProd := Prod == "true"
+
 	connections := websockets.New()
 	configFile, err := config.ReadConfigurationFile()
 	if err != nil {
@@ -34,11 +40,18 @@ func main() {
 
 	servicesRunner := runner.Start(configFile, connections)
 
-	go func() {
-		mux := http.NewServeMux()
-		mux.Handle("/", clientHandler())
-		http.ListenAndServe(":9999", mux)
-	}()
+	if isProd {
+		go func() {
+			mux := http.NewServeMux()
+			mux.Handle("/", clientHandler())
+			http.ListenAndServe(":9999", mux)
+		}()
+
+		go func() {
+			time.Sleep(time.Second)
+			utility.OpenBrowser("http://localhost:9999")
+		}()
+	}
 
 	// API Router
 	restAPI := newRestAPI(connections, configFile, servicesRunner)
