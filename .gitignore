@@ -25,4 +25,4 @@ yarn-error.log*
 api/main
 example/api/main
 api/tmp
-# api/build/**
+api/build/**

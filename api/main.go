@@ -16,6 +16,15 @@ import (
 	"golang.org/x/net/websocket"
 )
 
+//go:embed build
+var content embed.FS
+
+func clientHandler() http.Handler {
+	fsys := fs.FS(content)
+	contentStatic, _ := fs.Sub(fsys, "build")
+	return http.FileServer(http.FS(contentStatic))
+}
+
 func main() {
 	connections := websockets.New()
 	configFile, err := config.ReadConfigurationFile()
@@ -24,6 +33,12 @@ func main() {
 	}
 
 	servicesRunner := runner.Start(configFile, connections)
+
+	go func() {
+		mux := http.NewServeMux()
+		mux.Handle("/", clientHandler())
+		http.ListenAndServe(":9999", mux)
+	}()
 
 	// API Router
 	restAPI := newRestAPI(connections, configFile, servicesRunner)
@@ -39,9 +54,6 @@ type SetWatchingBody struct {
 	IsWatching bool `json:"isWatching"`
 }
 
-//go:embed build
-var content embed.FS
-
 // NewRestAPI initialize an empty
 func newRestAPI(connections *websockets.Connections, configFile *config.ConfigurationFile, servicesRunner *runner.Runner) *RestServer {
 
@@ -50,11 +62,6 @@ func newRestAPI(connections *websockets.Connections, configFile *config.Configur
 	e.Use(middleware.CORS())
 	e.HTTPErrorHandler = errors.HTTPErrorHandler
 	e.Use(errors.PanicMiddleware)
-
-	fsys := fs.FS(content)
-	contentStatic, _ := fs.Sub(fsys, "build")
-	fmt.Println(aurora.Red(contentStatic))
-
 	e.GET("/ws", websocketHandler(connections))
 	e.GET("/healthcheck", func(c echo.Context) error {
 		return c.String(http.StatusOK, "")
