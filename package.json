@@ -32,7 +32,7 @@
   "scripts": {
     "lint": "eslint . --ext .ts --ext .tsx",
     "start": "concurrently -n frontend,backend -c blue,black 'PORT=4200 react-scripts start' 'cd api && air'",
-    "build": "react-scripts build",
+    "build": "react-scripts build && mv build api",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },

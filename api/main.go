@@ -5,7 +5,9 @@ import (
 	"devstack/errors"
 	"devstack/runner"
 	"devstack/websockets"
+	"embed"
 	"fmt"
+	"io/fs"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
@@ -37,6 +39,9 @@ type SetWatchingBody struct {
 	IsWatching bool `json:"isWatching"`
 }
 
+//go:embed build
+var content embed.FS
+
 // NewRestAPI initialize an empty
 func newRestAPI(connections *websockets.Connections, configFile *config.ConfigurationFile, servicesRunner *runner.Runner) *RestServer {
 
@@ -45,6 +50,10 @@ func newRestAPI(connections *websockets.Connections, configFile *config.Configur
 	e.Use(middleware.CORS())
 	e.HTTPErrorHandler = errors.HTTPErrorHandler
 	e.Use(errors.PanicMiddleware)
+
+	fsys := fs.FS(content)
+	contentStatic, _ := fs.Sub(fsys, "build")
+	fmt.Println(aurora.Red(contentStatic))
 
 	e.GET("/ws", websocketHandler(connections))
 	e.GET("/healthcheck", func(c echo.Context) error {
