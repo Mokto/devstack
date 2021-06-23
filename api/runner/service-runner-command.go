@@ -65,10 +65,11 @@ func (serviceRunner *ServiceRunner) execCommand() {
 			break
 		}
 
-		data := Data{
-			Message: string(line),
-		}
-		serviceRunner.runner.Logs = append(serviceRunner.runner.Logs, data)
-		serviceRunner.SendLog(data.Message)
+		message := string(line)
+		serviceRunner.runner.Logs = append(serviceRunner.runner.Logs, Data{
+			Message: message,
+			Service: serviceRunner.service,
+		})
+		serviceRunner.SendLog(message)
 	}
 }

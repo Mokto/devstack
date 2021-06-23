@@ -1,22 +1,88 @@
-/* https://chakra-ui.com/docs/theming/theme */
+@import-normalize;
+@import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@300&display=swap');
+body {
+    background: #282A36;
+    color: #F8F8F2;
+    font-family: 'Roboto Mono', monospace;
+}
+
 .ansi-blue-fg {
-    color: #63B3ED;
+    color: #BD93F9;
 }
+
 .ansi-yellow-fg {
-    color: #F6E05E;
+    color: #F1FA8C;
 }
+
 .ansi-red-fg {
-    color: #FC8181;
+    color: #FF5555;
 }
+
 .ansi-green-fg {
-    color: #68D391;
+    color: #50FA7B;
 }
+
 .ansi-cyan-fg {
-    color: #76E4F7;
+    color: #8BE9FD;
 }
+
 .ansi-magenta-fg {
-    color: #B794F4;
+    color: #FF79C6;
 }
+
 .ansi-black-fg {
-    color: black;
+    color: #21222C;
+}
+
+.services-container {
+    display: grid;
+    grid-gap: 10px;
+    grid-template-columns: repeat(auto-fill, 186px);
+}
+
+.service-box {
+    border: 1px solid #F8F8F2;
+    height: 200px;
+    padding: 10px;
+    border-radius: 3px;
+    margin-bottom: 10px;
+}
+
+.service-box .title {
+    text-align: center;
+    text-transform: capitalize;
+    font-size: 18px;
+    margin-bottom: 10px;
+}
+
+.logs {
+    position: fixed;
+    top: 250px;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    overflow-y: scroll;
+}
+
+button {
+    display: inline-block;
+    padding: 0.35em 1.2em;
+    border: 0.1em solid #FFFFFF;
+    margin: 0 0.3em 0.3em 0;
+    border-radius: 0.12em;
+    box-sizing: border-box;
+    text-decoration: none;
+    font-family: 'Roboto', sans-serif;
+    font-weight: 300;
+    color: #FFFFFF;
+    text-align: center;
+    transition: all 0.2s;
+    background: transparent;
+    cursor: pointer;
+    width: 100%;
+}
+
+button:hover {
+    color: #000000;
+    background-color: #FFFFFF;
 }
