@@ -1,7 +1,6 @@
 package runner
 
 import (
-	"fmt"
 	"io/fs"
 	"os"
 	"path/filepath"
@@ -21,13 +20,15 @@ func (serviceRunner *ServiceRunner) watch() {
 	serviceRunner.watcher, _ = fsnotify.NewWatcher()
 	defer serviceRunner.watcher.Close()
 
-	if err := filepath.Walk("../example", func(path string, info fs.FileInfo, err error) error {
-		if info.Mode().IsDir() {
-			return serviceRunner.watcher.Add(path)
+	for _, path := range serviceRunner.service.WatchDirectories {
+		if err := filepath.Walk(serviceRunner.service.Cwd+"/"+path, func(path string, info fs.FileInfo, err error) error {
+			if info != nil && info.Mode().IsDir() {
+				return serviceRunner.watcher.Add(path)
+			}
+			return nil
+		}); err != nil {
+			panic(err)
 		}
-		return nil
-	}); err != nil {
-		panic(err)
 	}
 
 	serviceRunner.stopWatchingChannel = make(chan bool)
@@ -66,15 +67,11 @@ func (serviceRunner *ServiceRunner) watch() {
 
 	<-serviceRunner.stopWatchingChannel
 
-	fmt.Println(aurora.Red("STOPPED WATCHING"))
-
 	serviceRunner.IsWatching = false
 	throttle.Stop()
 
 }
 
 func (serviceRunner *ServiceRunner) stopWatching() {
-	fmt.Println(aurora.Red("COUCOU"))
-
 	serviceRunner.stopWatchingChannel <- true
 }

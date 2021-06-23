@@ -77,7 +77,7 @@ export const IndexPage = memo(() => {
     return (
       <>
         <span
-          style={{ display: 'inline-block', width: 100 }}
+          style={{ display: 'inline-block', width: 200 }}
           className={`ansi-${log.service.color}-fg`}
         >
           [{log.service.name}]

@@ -43,6 +43,9 @@ func (serviceRunner *ServiceRunner) Init() {
 
 func (serviceRunner *ServiceRunner) Restart() {
 	serviceRunner.SendLog(aurora.Yellow("Restarting service...").String())
+	if serviceRunner.cmd.Process == nil {
+		panic("Process is nil")
+	}
 	err := serviceRunner.cmd.Process.Signal(os.Kill)
 	if err != nil {
 		panic(err)
