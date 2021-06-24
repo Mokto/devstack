@@ -7,6 +7,8 @@ import (
 	"path/filepath"
 	"time"
 
+	p "path"
+
 	"github.com/boz/go-throttle"
 	"github.com/fsnotify/fsnotify"
 	"github.com/logrusorgru/aurora"
@@ -22,10 +24,15 @@ func (serviceRunner *ServiceRunner) watch() {
 	defer serviceRunner.watcher.Close()
 
 	for _, path := range serviceRunner.service.WatchDirectories {
-		filePath := serviceRunner.service.Cwd + "/" + path
+		filePath := p.Clean(serviceRunner.service.Cwd + "/" + path)
+
 		if err := filepath.Walk(filePath, func(path string, info fs.FileInfo, err error) error {
 			if info != nil && info.Mode().IsDir() {
-				return serviceRunner.watcher.Add(path)
+				err := serviceRunner.watcher.Add(path)
+				if err != nil {
+					fmt.Println(aurora.Red(err), path)
+				}
+				return nil
 			}
 			return nil
 		}); err != nil {

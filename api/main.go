@@ -6,6 +6,7 @@ import (
 	"devstack/errors"
 	"devstack/graceful"
 	"devstack/runner"
+	"devstack/ulimit"
 	"devstack/utility"
 	"devstack/websockets"
 	"embed"
@@ -32,6 +33,8 @@ func clientHandler() http.Handler {
 }
 
 func main() {
+	ulimit.Increase()
+
 	isProd := Prod == "true"
 
 	graceful := graceful.Start()
