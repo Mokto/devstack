@@ -107,7 +107,12 @@ func newRestAPI(connections *websockets.Connections, configFile *config.Configur
 		return c.JSON(http.StatusOK, configFile)
 	})
 	e.GET("/logs", func(c echo.Context) error {
-		return c.JSON(http.StatusOK, servicesRunner.Logs)
+		// we only return the last 1000 logs
+		minIndex := len(servicesRunner.Logs) - 1000
+		if minIndex < 0 {
+			minIndex = 0
+		}
+		return c.JSON(http.StatusOK, servicesRunner.Logs[minIndex:])
 	})
 	e.POST("/restart/:name", func(c echo.Context) error {
 		serviceName := c.Param("name")
