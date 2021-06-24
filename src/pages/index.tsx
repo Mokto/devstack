@@ -126,9 +126,7 @@ export const IndexPage = memo(() => {
                 <button
                   onClick={() => {
                     service.isRunning = !service.isRunning;
-                    if (!service.isRunning) {
-                      service.isWatching = false;
-                    }
+                    service.isWatching = service.isRunning;
                     setState({ ...state });
                     fetch(`http://localhost:9111/setRunning/${service.name}`, {
                       method: 'post',

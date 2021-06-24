@@ -1,6 +1,7 @@
 package runner
 
 import (
+	"fmt"
 	"io/fs"
 	"os"
 	"path/filepath"
@@ -21,12 +22,14 @@ func (serviceRunner *ServiceRunner) watch() {
 	defer serviceRunner.watcher.Close()
 
 	for _, path := range serviceRunner.service.WatchDirectories {
-		if err := filepath.Walk(serviceRunner.service.Cwd+"/"+path, func(path string, info fs.FileInfo, err error) error {
+		filePath := serviceRunner.service.Cwd + "/" + path
+		if err := filepath.Walk(filePath, func(path string, info fs.FileInfo, err error) error {
 			if info != nil && info.Mode().IsDir() {
 				return serviceRunner.watcher.Add(path)
 			}
 			return nil
 		}); err != nil {
+			fmt.Println(aurora.Red(filePath))
 			panic(err)
 		}
 	}
@@ -67,6 +70,7 @@ func (serviceRunner *ServiceRunner) watch() {
 
 	<-serviceRunner.stopWatchingChannel
 
+	serviceRunner.watcher.Close()
 	serviceRunner.IsWatching = false
 	throttle.Stop()
 
