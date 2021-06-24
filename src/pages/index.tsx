@@ -17,6 +17,7 @@ interface Service {
   color: string;
   command: string;
   isWatching: boolean;
+  isRunning: boolean;
   watchDirectories: string[];
 }
 interface State {
@@ -101,20 +102,48 @@ export const IndexPage = memo(() => {
               <div
                 key={service.name}
                 className={`service-box ${
-                  service.isWatching ? 'service-is-watching' : ''
+                  service.isRunning
+                    ? 'service-is-running'
+                    : 'service-is-stopped'
+                } ${
+                  service.watchDirectories && !service.isWatching
+                    ? 'service-disabled-watching'
+                    : ''
                 }`}
               >
                 <div className="title">{service.name}</div>
+                {service.isRunning && (
+                  <button
+                    onClick={() => {
+                      fetch(`http://localhost:9111/restart/${service.name}`, {
+                        method: 'post',
+                      });
+                    }}
+                  >
+                    Restart
+                  </button>
+                )}
                 <button
                   onClick={() => {
-                    fetch(`http://localhost:9111/restart/${service.name}`, {
+                    service.isRunning = !service.isRunning;
+                    if (!service.isRunning) {
+                      service.isWatching = false;
+                    }
+                    setState({ ...state });
+                    fetch(`http://localhost:9111/setRunning/${service.name}`, {
                       method: 'post',
+                      body: JSON.stringify({
+                        isRunning: service.isRunning,
+                      }),
+                      headers: new Headers({
+                        'Content-Type': 'application/json',
+                      }),
                     });
                   }}
                 >
-                  Restart
+                  {service.isRunning ? 'Stop' : 'Start'} service
                 </button>
-                {service.watchDirectories && (
+                {service.watchDirectories && service.isRunning && (
                   <button
                     onClick={() => {
                       service.isWatching = !service.isWatching;

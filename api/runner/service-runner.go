@@ -8,7 +8,6 @@ import (
 	"os/exec"
 
 	"github.com/fsnotify/fsnotify"
-	"github.com/logrusorgru/aurora"
 )
 
 type Data struct {
@@ -27,7 +26,8 @@ type ServiceRunner struct {
 	watcher             *fsnotify.Watcher
 	stopWatchingChannel chan bool
 	service             *config.Service
-	IsWatching          bool `json:"isWatching"`
+	IsWatching          bool
+	IsRunning           bool
 }
 
 func (serviceRunner *ServiceRunner) Init() {
@@ -42,7 +42,12 @@ func (serviceRunner *ServiceRunner) Init() {
 }
 
 func (serviceRunner *ServiceRunner) Restart() {
-	serviceRunner.SendLog(aurora.Yellow("Restarting service...").String())
+	serviceRunner.Stop()
+	serviceRunner.Init()
+}
+
+func (serviceRunner *ServiceRunner) Stop() {
+	serviceRunner.stopWatching()
 	if serviceRunner.cmd.Process == nil {
 		panic("Process is nil")
 	}
@@ -50,7 +55,6 @@ func (serviceRunner *ServiceRunner) Restart() {
 	if err != nil {
 		panic(err)
 	}
-	serviceRunner.Init()
 }
 
 func (serviceRunner *ServiceRunner) SendLog(message string) {

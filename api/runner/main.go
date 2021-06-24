@@ -30,11 +30,29 @@ func (r *Runner) IsWatching(serviceName string) bool {
 	return r.services[serviceName].IsWatching
 }
 
+func (r *Runner) IsRunning(serviceName string) bool {
+	return r.services[serviceName].IsRunning
+}
+
 func (r *Runner) SetWatching(serviceName string, isWatching bool) {
 	if isWatching {
 		r.services[serviceName].watch()
 	} else {
 		r.services[serviceName].stopWatching()
+	}
+}
+
+func (r *Runner) SetIsRunning(serviceName string, isRunning bool) {
+	if isRunning {
+		r.services[serviceName].Restart()
+	} else {
+		r.services[serviceName].Stop()
+	}
+}
+
+func (r *Runner) StopAll() {
+	for _, service := range r.services {
+		service.Stop()
 	}
 }
 

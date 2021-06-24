@@ -73,5 +73,7 @@ func (serviceRunner *ServiceRunner) watch() {
 }
 
 func (serviceRunner *ServiceRunner) stopWatching() {
-	serviceRunner.stopWatchingChannel <- true
+	if serviceRunner.IsWatching {
+		serviceRunner.stopWatchingChannel <- true
+	}
 }

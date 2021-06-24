@@ -1,8 +1,10 @@
 package main
 
 import (
+	"context"
 	"devstack/config"
 	"devstack/errors"
+	"devstack/graceful"
 	"devstack/runner"
 	"devstack/utility"
 	"devstack/websockets"
@@ -32,6 +34,8 @@ func clientHandler() http.Handler {
 func main() {
 	isProd := Prod == "true"
 
+	graceful := graceful.Start()
+
 	connections := websockets.New()
 	configFile, err := config.ReadConfigurationFile()
 	if err != nil {
@@ -40,11 +44,19 @@ func main() {
 
 	servicesRunner := runner.Start(configFile, connections)
 
+	graceful.OnShutdown(func() {
+		servicesRunner.StopAll()
+	})
+
 	if isProd {
 		go func() {
 			mux := http.NewServeMux()
 			mux.Handle("/", clientHandler())
-			http.ListenAndServe(":9999", mux)
+			fmt.Println(aurora.Green("Server started on port :9999"))
+			err := http.ListenAndServe(":9999", mux)
+			if err != nil {
+				panic(err)
+			}
 		}()
 
 		go func() {
@@ -55,7 +67,9 @@ func main() {
 
 	// API Router
 	restAPI := newRestAPI(connections, configFile, servicesRunner)
-	restAPI.RunServer()
+	restAPI.RunServer(graceful, isProd)
+
+	graceful.Wait()
 }
 
 // RestServer is the implementation of the rest API
@@ -65,6 +79,9 @@ type RestServer struct {
 
 type SetWatchingBody struct {
 	IsWatching bool `json:"isWatching"`
+}
+type SetRunningBody struct {
+	IsRunning bool `json:"isRunning"`
 }
 
 // NewRestAPI initialize an empty
@@ -82,6 +99,7 @@ func newRestAPI(connections *websockets.Connections, configFile *config.Configur
 	e.GET("/state", func(c echo.Context) error {
 		for _, service := range configFile.Services {
 			service.IsWatching = servicesRunner.IsWatching(service.Name)
+			service.IsRunning = servicesRunner.IsRunning(service.Name)
 		}
 		return c.JSON(http.StatusOK, configFile)
 	})
@@ -103,31 +121,41 @@ func newRestAPI(connections *websockets.Connections, configFile *config.Configur
 		return c.NoContent(http.StatusOK)
 	})
 
+	e.POST("/setRunning/:name", func(c echo.Context) error {
+		serviceName := c.Param("name")
+		var body SetRunningBody
+		if err := c.Bind(&body); err != nil {
+			return errors.Wrap(err)
+		}
+		servicesRunner.SetIsRunning(serviceName, body.IsRunning)
+		return c.NoContent(http.StatusOK)
+	})
+
 	return &RestServer{
 		echoServer: e,
 	}
 }
 
 // RunServer starts the rest server on a specific port
-func (server *RestServer) RunServer() {
-	// go func() {
-	server.echoServer.HideBanner = true
-	server.echoServer.HidePort = true
-	err := server.echoServer.Start(":9111")
-	if err != nil && err.Error() != "http: Server closed" {
-		// server.common.Exceptions.CaptureFatalException(err)
-		fmt.Println(aurora.Red(err))
+func (server *RestServer) RunServer(graceful *graceful.Manager, isProd bool) {
+	go func() {
+		server.echoServer.HideBanner = true
+		server.echoServer.HidePort = isProd
+		err := server.echoServer.Start(":9111")
+		if err != nil && err.Error() != "http: Server closed" {
+			// server.common.Exceptions.CaptureFatalException(err)
+			fmt.Println(aurora.Red(err))
 
-	}
-	// }()
+		}
+	}()
 
-	// server.common.Graceful.OnShutdown(func() {
-	// 	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
-	// 	defer cancel()
-	// 	if err := server.echoServer.Shutdown(ctx); err != nil {
-	// 		server.echoServer.Logger.Fatal(err)
-	// 	}
-	// })
+	graceful.OnShutdown(func() {
+		ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+		defer cancel()
+		if err := server.echoServer.Shutdown(ctx); err != nil {
+			server.echoServer.Logger.Fatal(err)
+		}
+	})
 }
 
 func websocketHandler(connections *websockets.Connections) func(c echo.Context) error {

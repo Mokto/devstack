@@ -46,13 +46,21 @@ body {
 
 .service-box {
     border: 1px solid #F8F8F2;
-    height: 120px;
+    height: 140px;
     padding: 10px;
     border-radius: 3px;
 }
 
-.service-box.service-is-watching {
+.service-box.service-is-running {
     border-color: #50FA7B;
+}
+
+.service-box.service-is-stopped {
+    border-color: #FF5555;
+}
+
+.service-box.service-is-running.service-disabled-watching {
+    border-color: #FF79C6;
 }
 
 .service-box .title {
@@ -64,11 +72,12 @@ body {
 
 .logs {
     position: fixed;
-    top: 210px;
+    top: 220px;
     bottom: 0;
     left: 0;
     right: 0;
     overflow-y: scroll;
+    padding: 20px 5px;
 }
 
 button {

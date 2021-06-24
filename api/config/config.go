@@ -19,6 +19,8 @@ type Service struct {
 	Env              map[string]string `json:"env"`
 	// dynamic
 	IsWatching bool `json:"isWatching"`
+	// dynamic
+	IsRunning bool `json:"isRunning"`
 }
 
 type ConfigurationFile struct {
