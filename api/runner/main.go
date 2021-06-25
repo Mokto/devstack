@@ -38,7 +38,7 @@ func (r *Runner) SetWatching(serviceName string, isWatching bool) {
 	if isWatching {
 		r.services[serviceName].watch()
 	} else {
-		r.services[serviceName].stopWatching()
+		r.services[serviceName].StopWatching()
 	}
 }
 
@@ -46,6 +46,7 @@ func (r *Runner) SetIsRunning(serviceName string, isRunning bool) {
 	if isRunning {
 		r.services[serviceName].Restart()
 	} else {
+		r.services[serviceName].StopWatching()
 		r.services[serviceName].Stop()
 	}
 }

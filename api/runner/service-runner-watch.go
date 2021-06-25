@@ -87,7 +87,7 @@ func (serviceRunner *ServiceRunner) watch() {
 
 }
 
-func (serviceRunner *ServiceRunner) stopWatching() {
+func (serviceRunner *ServiceRunner) StopWatching() {
 	if serviceRunner.IsWatching {
 		serviceRunner.stopWatchingChannel <- true
 	}

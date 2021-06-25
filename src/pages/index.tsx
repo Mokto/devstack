@@ -67,6 +67,22 @@ export const IndexPage = memo(() => {
     return () => websocket.off('log', onLog);
   }, []);
 
+  // state
+  useEffect(() => {
+    const onChangeState = ({ isRunning, serviceName }: any) => {
+      if (state) {
+        const service = state.services.find(s => s.name === serviceName);
+        if (service) {
+          service.isRunning = isRunning;
+        }
+      }
+
+      setState(state);
+    };
+    websocket.on('isRunning', onChangeState);
+    return () => websocket.off('isRunning', onChangeState);
+  }, [state]);
+
   useLayoutEffect(() => {
     const logsElement = document.getElementById('logs');
     if (logsElement) {

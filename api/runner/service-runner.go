@@ -11,13 +11,13 @@ import (
 )
 
 type Data struct {
-	Message string          `json:"message"`
 	Service *config.Service `json:"service"`
+	Message string          `json:"message"`
 }
 
 type Message struct {
-	EventName string `json:"eventName"`
 	Data      Data   `json:"data"`
+	EventName string `json:"eventName"`
 }
 
 type ServiceRunner struct {
@@ -48,7 +48,6 @@ func (serviceRunner *ServiceRunner) Restart() {
 }
 
 func (serviceRunner *ServiceRunner) Stop() {
-	serviceRunner.stopWatching()
 	if serviceRunner.cmd.Process == nil {
 		panic("Process is nil")
 	}
@@ -65,6 +64,32 @@ func (serviceRunner *ServiceRunner) SendLog(message string) {
 		Data: Data{
 			Message: message,
 			Service: serviceRunner.service,
+		},
+	})
+	for _, user := range serviceRunner.runner.connections.Users {
+		err := websockets.Send(user, string(bytes))
+		if err != nil {
+			panic(err)
+		}
+	}
+}
+
+type State struct {
+	ServiceName string `json:"serviceName"`
+	IsRunning   bool   `json:"isRunning"`
+}
+type StateWebsocket struct {
+	EventName string `json:"eventName"`
+	State     State  `json:"data"`
+}
+
+func (serviceRunner *ServiceRunner) SendIsRunning(isRunning bool) {
+
+	bytes, _ := json.Marshal(StateWebsocket{
+		EventName: "isRunning",
+		State: State{
+			IsRunning:   isRunning,
+			ServiceName: serviceRunner.service.Name,
 		},
 	})
 	for _, user := range serviceRunner.runner.connections.Users {

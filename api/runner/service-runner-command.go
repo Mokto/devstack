@@ -26,6 +26,8 @@ func (serviceRunner *ServiceRunner) execCommand() {
 	splitted := strings.Split(serviceRunner.service.Command, " ")
 	serviceRunner.cmd = exec.Command(splitted[0], splitted[1:]...)
 	serviceRunner.IsRunning = true
+
+	serviceRunner.SendIsRunning(true)
 	// serviceRunner.cmd = exec.Command("/bin/bash", "-c", serviceRunner.service.Command)
 
 	if serviceRunner.service.Cwd != "" {
@@ -95,6 +97,7 @@ func (serviceRunner *ServiceRunner) execCommand() {
 		serviceRunner.SendLog(message)
 	}
 
+	serviceRunner.SendIsRunning(false)
 	serviceRunner.IsRunning = false
 
 }
