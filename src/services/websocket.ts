@@ -1,7 +1,7 @@
 class WebsocketClient {
   public websocket!: WebSocket;
   private wsUrl = 'ws://localhost:9111/ws';
-  public isConnected = false;
+  public isConnected = true;
   private messageQueue: string[] = [];
 
   private callbacks: {
