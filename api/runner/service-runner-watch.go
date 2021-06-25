@@ -5,6 +5,7 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 
 	p "path"
@@ -13,6 +14,20 @@ import (
 	"github.com/fsnotify/fsnotify"
 	"github.com/logrusorgru/aurora"
 )
+
+func (serviceRunner *ServiceRunner) isWatchAllowed(path string) bool {
+	if len(serviceRunner.service.WatchExclude) == 0 {
+		return true
+	}
+
+	for _, exclude := range serviceRunner.service.WatchExclude {
+		if strings.Contains(path, exclude) {
+			return false
+		}
+	}
+
+	return true
+}
 
 func (serviceRunner *ServiceRunner) watch() {
 	projectPath := os.Getenv("PROJECT_PATH")
@@ -31,6 +46,9 @@ func (serviceRunner *ServiceRunner) watch() {
 			filePath = p.Clean(projectPath + "/" + filePath)
 		}
 		if err := filepath.Walk(filePath, func(path string, info fs.FileInfo, err error) error {
+			if !serviceRunner.isWatchAllowed(path) {
+				return nil
+			}
 			if info != nil && info.Mode().IsDir() {
 				err := serviceRunner.watcher.Add(path)
 				if err != nil {
@@ -61,7 +79,7 @@ func (serviceRunner *ServiceRunner) watch() {
 					if err != nil {
 						panic(err)
 					}
-					if fi.IsDir() {
+					if fi.IsDir() && serviceRunner.isWatchAllowed(event.Name) {
 						serviceRunner.watcher.Add(event.Name)
 					}
 				}

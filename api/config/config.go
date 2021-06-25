@@ -16,6 +16,7 @@ type Service struct {
 	Color            string            `json:"color"`
 	Cwd              string            `json:"cwd"`
 	WatchDirectories []string          `json:"watchDirectories"`
+	WatchExclude     []string          `json:"watchExclude"`
 	Env              map[string]string `json:"env"`
 	// dynamic
 	IsWatching bool `json:"isWatching"`
