@@ -1,12 +1,13 @@
 class WebsocketClient {
   public websocket!: WebSocket;
   private wsUrl = 'ws://localhost:9111/ws';
-  private isConnected = false;
+  public isConnected = false;
   private messageQueue: string[] = [];
 
   private callbacks: {
     [eventName: string]: ((data?: any) => void)[];
   } = {};
+  private callbacksConnections: ((isConnected: boolean) => void)[] = [];
 
   constructor() {
     this.initializeWebSocket();
@@ -23,6 +24,15 @@ class WebsocketClient {
       } catch {}
     }
     this.websocket.send(message);
+  }
+
+  public onConnectionEvent(callback: (isConnected: boolean) => void) {
+    this.callbacksConnections.push(callback);
+  }
+  public offConnectionEvent(callback: (isConnected: boolean) => void) {
+    this.callbacksConnections = this.callbacksConnections.filter(
+      c => c !== callback
+    );
   }
 
   public on(eventName: string, callback: (data?: any) => void) {
@@ -63,12 +73,17 @@ class WebsocketClient {
   private onOpen = () => {
     this.isConnected = true;
 
+    this.callbacksConnections.forEach(cb => cb(true));
+
     this.messageQueue.forEach(message => this.send(message));
     this.messageQueue = [];
   };
 
   private onClose = () => {
     this.isConnected = false;
+
+    this.callbacksConnections.forEach(cb => cb(false));
+
     setTimeout(() => {
       this.initializeWebSocket();
     }, 300);
