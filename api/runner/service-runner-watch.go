@@ -15,6 +15,8 @@ import (
 )
 
 func (serviceRunner *ServiceRunner) watch() {
+	projectPath := os.Getenv("PROJECT_PATH")
+
 	if serviceRunner.IsWatching {
 		return
 	}
@@ -25,7 +27,9 @@ func (serviceRunner *ServiceRunner) watch() {
 
 	for _, path := range serviceRunner.service.WatchDirectories {
 		filePath := p.Clean(serviceRunner.service.Cwd + "/" + path)
-
+		if projectPath != "" {
+			filePath = p.Clean(projectPath + "/" + filePath)
+		}
 		if err := filepath.Walk(filePath, func(path string, info fs.FileInfo, err error) error {
 			if info != nil && info.Mode().IsDir() {
 				err := serviceRunner.watcher.Add(path)
