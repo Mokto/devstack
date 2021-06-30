@@ -39,7 +39,6 @@ func (serviceRunner *ServiceRunner) Init() {
 			serviceRunner.watch()
 		}()
 	}
-	serviceRunner.IsRunning = true
 }
 
 func (serviceRunner *ServiceRunner) Restart() {

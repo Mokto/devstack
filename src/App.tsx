@@ -1,5 +1,5 @@
 import React, { memo, useState, useEffect } from 'react';
-import { IndexPage } from './pages/index';
+import { ServicesPage } from './modules/services/page';
 import { websocket } from './services/websocket';
 
 export default memo(() => {
@@ -19,5 +19,5 @@ export default memo(() => {
     return <h1>Not connected to server. Make sure it's online.</h1>;
   }
 
-  return <IndexPage />;
+  return <ServicesPage />;
 });
